@@ -41,6 +41,18 @@ func (s *Secret[T]) String() string {
 	return fmt.Sprintf("Secret[%v](******)", typeName)
 }
 
+// Disable zeroize on garbage collection for this secret.
+func (s *Secret[T]) DisableZeroize() {
+	runtime.SetFinalizer(s, nil)
+}
+
+// Enable zeroize on garbage collection for this secret.
+// By default zeroize is enabled, you don't need to call this function if didn't
+// call DisableZeroize before.
+func (s *Secret[T]) EnableZeroize() {
+	runtime.SetFinalizer(s, Zeroize)
+}
+
 // Zeroize implements Zeroizer.
 func (s *Secret[T]) Zeroize() {
 	Zeroize(s.value)
