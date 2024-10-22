@@ -1,38 +1,30 @@
-# `secrecy` - A simple secret-keeping library for Go.
+# 🤫 `secrecy` - A simple secret-keeping library for Go.
 
-secrecy is a simple, safe library which provides wrapper type for secret management in Go.
+<p>
+	<a href="https://pkg.go.dev/github.com/negrel/secrecy">
+		<img alt="PkgGoDev" src="https://pkg.go.dev/badge/github.com/negrel/secrecy">
+	</a>
+	<a href="https://goreportcard.com/report/github.com/negrel/secrecy">
+		<img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/negrel/secrecy">
+	</a>
+	<img alt="Go version" src="https://img.shields.io/github/go-mod/go-version/prismelabs/analytics">
+</p>
 
-## Why ?
+`secrecy` is a simple library which provides wrapper type for secret management
+in Go. It is inspired from the excellent
+[`secrecy`](https://github.com/iqlusioninc/crates/tree/main/secrecy) Rust crate.
 
-- What was your motivation?
-- Why did you build this project?
-- What problem does it solve?
-- What did you learn?
-- What makes your project stand out?
+It provides a `Secret[T]` type for wrapping another value in a secret cell which
+attempts to limit exposure (only available via the special `ExposeSecret()`
+function).
 
-If your project has a lot of features, consider adding a "Features" section and listing them here.
+Each secret has a [`finalizer`](https://pkg.go.dev/runtime#SetFinalizer) attached
+that recusively zeroize secret memory when garbage collected. You must not share
+memory contained within a secret and share the secret itself.
 
-## Getting started
-
-### Configuration
-
-Here is a table of configuration options:
-
-|  Option name  | Default value |           Description            |
-| :-----------: | :-----------: | :------------------------------: |
-| `OPTION_NAME` |    `VALUE`    |       Option description.        |
-
-### Building the project
-
-```shell
-make build
-```
-
-### Running the tests
-
-```shell
-make tests
-```
+This helps to ensure secrets aren't accidentally copied, logged, or otherwise
+exposed (as much as possible), and also ensures secrets are securely wiped from
+memory when garbage collected.
 
 ## Contributing
 
