@@ -59,6 +59,9 @@ func (s *Secret[T]) Zeroize() {
 }
 
 // NewSecretString wraps given secret and returns SecretString.
+// This function takes a byte slice as parameter so the secret can be wiped
+// on garbage collection. Use UnsafeStringToBytes to convert your string to a
+// byte slice if needed.
 func NewSecretString(secret []byte) SecretString {
 	return SecretString{NewSecret(secret)}
 }
@@ -73,5 +76,19 @@ type SecretString struct {
 // Don't store returned value and prefer passing SecretString itself if needed.
 func (ss SecretString) ExposeSecret() string {
 	bytes := ss.Secret.ExposeSecret()
+	return UnsafeBytesToString(bytes)
+}
+
+// UnsafeStringToBytes converts given string into a bytes slice using unsafe.
+// This function doesn't perform any copy so mutating the byte slice will mutate
+// the string.
+func UnsafeStringToBytes(str string) []byte {
+	return unsafe.Slice(unsafe.StringData(str), len(str))
+}
+
+// UnsafeStringToBytes converts given string into a bytes slice using unsafe.
+// This function doesn't perform any copy so mutating the byte slice will mutate
+// the returned string.
+func UnsafeBytesToString(bytes []byte) string {
 	return unsafe.String(unsafe.SliceData(bytes), len(bytes))
 }
