@@ -54,7 +54,7 @@ func (s *Secret[T]) EnableZeroize() {
 }
 
 // Zeroize implements Zeroizer.
-func (s *Secret[T]) Zeroize() {
+func (s Secret[T]) Zeroize() {
 	Zeroize(s.value)
 }
 

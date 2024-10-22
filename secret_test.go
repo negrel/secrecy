@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"runtime"
 	"testing"
 )
 
@@ -41,4 +42,5 @@ func TestSecret(t *testing.T) {
 			t.Fatal("json.Marshal leak secret:", str)
 		}
 	})
+	runtime.GC()
 }

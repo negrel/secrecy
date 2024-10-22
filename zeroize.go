@@ -6,8 +6,10 @@ import (
 )
 
 // Interface for securely erasing values from memory. You may want to implement
-// it if yoo're struct contains unexported fields that can't be ignored using
+// it if you're struct contains unexported fields that can't be ignored using
 // `Zeroizer:"ignore"` struct tag.
+// This interface MUST be implemented using a struct receiver and not a pointer
+// receiver.
 type Zeroizer interface {
 	Zeroize()
 }
