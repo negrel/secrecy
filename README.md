@@ -26,6 +26,63 @@ This helps to ensure secrets aren't accidentally copied, logged, or otherwise
 exposed (as much as possible), and also ensures secrets are securely wiped from
 memory when garbage collected.
 
+## Getting started
+
+Here is a simple example for storing an API key.
+
+```go
+package main
+
+import (
+	"github.com/negrel/secrecy"
+)
+
+func main() {
+	// Load secret on startup.
+	secretApi := secrecy.NewSecretString(retrieveApiKey())
+
+	// Then use it like this.
+	apiCall(secretApi)
+}
+
+func apiCall(secret secrecy.SecretString) {
+	apiKey := secret.ExposeSecret()
+	// Use your API key but don't store it.
+}
+
+func retrieveSecret() []byte {
+	// Securely retrieve your api key.
+}
+```
+
+Sometime, you must pass your secret to a library global variable such as stripe
+global [`Key`](https://pkg.go.dev/github.com/stripe/stripe-go/v80#pkg-variables)
+variable.
+
+To do so, you must disable memory zeroize as it will corrupt the exposed string
+when the secret will be garbage collected.
+
+```go
+package main
+
+import (
+	"github.com/negrel/secrecy"
+	"github.com/stripe/stripe-go/v80"
+)
+
+func main() {
+	// Load secret on startup.
+	stripeSecret := secrecy.NewSecretString(retrieveApiKey())
+	stripeSecret.DisableZeroize()
+
+	stripe.Key = stripeSecret.ExposeSecret()
+}
+
+func retrieveStripeSecret() []byte {
+	// Securely retrieve your api key.
+}
+```
+
 ## Contributing
 
 If you want to contribute to `secrecy` to add a feature or improve the code contact
