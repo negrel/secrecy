@@ -1,20 +1,56 @@
 package secrecy
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"log/slog"
 	"runtime"
+	"strings"
 	"testing"
 )
 
 func TestSecret(t *testing.T) {
-	t.Run("fmt.Sprintf", func(t *testing.T) {
+	t.Run("fmt.Sprintf(%+v)", func(t *testing.T) {
 		secret := NewSecret("mysecret")
 		str := fmt.Sprintf("%+v", secret)
-		if str != "Secret[string](******)" {
-			t.Fatal("fmt.Sprintf leak secret:", str)
+		if str != "<!SECRET_LEAKED!>" {
+			t.Fatal("fmt.Sprintf(% +v) leak secret:", str)
 		}
+	})
+
+	t.Run("fmt.Sprintf(%#v)", func(t *testing.T) {
+		secret := NewSecret("mysecret")
+		str := fmt.Sprintf("%#v", secret)
+		if str != "<!SECRET_LEAKED!> Secret[string](******)" {
+			t.Fatal("fmt.Sprintf(% #v) leak secret:", str)
+		}
+	})
+
+	t.Run("slog.Log", func(t *testing.T) {
+		t.Run("WithTextHandler", func(t *testing.T) {
+			buf := bytes.Buffer{}
+			logger := slog.New(slog.NewTextHandler(&buf, nil))
+
+			secret := NewSecret("mysecret")
+			logger.Info("", "secret", secret)
+			str := buf.String()
+			if strings.Contains(str, "mysecret") {
+				t.Fatal("fmt.Sprintf leak secret:", str)
+			}
+		})
+		t.Run("WithJsonHandler", func(t *testing.T) {
+			buf := bytes.Buffer{}
+			logger := slog.New(slog.NewJSONHandler(&buf, nil))
+
+			secret := NewSecret("mysecret")
+			logger.Info("", "secret", secret)
+			str := buf.String()
+			if strings.Contains(str, "mysecret") {
+				t.Fatal("fmt.Sprintf leak secret:", str)
+			}
+		})
 	})
 
 	t.Run("json.Marshal", func(t *testing.T) {
@@ -25,7 +61,7 @@ func TestSecret(t *testing.T) {
 		}
 		str := string(bytes)
 
-		if str != "{}" {
+		if str != `"\u003c!SECRET_LEAKED!\u003e"` {
 			t.Fatal("json.Marshal leak secret:", str)
 		}
 	})
@@ -38,9 +74,11 @@ func TestSecret(t *testing.T) {
 		}
 		str := string(bytes)
 
-		if str != `<Secret></Secret>` {
-			t.Fatal("json.Marshal leak secret:", str)
+		if str != `<Secret[string]>&lt;!SECRET_LEAKED!&gt;</Secret[string]>` {
+			t.Fatal("xml.Marshal leak secret:", str)
 		}
 	})
+
+	// Run garbage collector to trigger finalizer and zeroize memory.
 	runtime.GC()
 }

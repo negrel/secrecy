@@ -7,6 +7,12 @@ import (
 	"unsafe"
 )
 
+// SecretLeakedMarker is a marker string returned by Secret[T] when accidentally
+// leaking the secret. This value is returned when you try to fmt.Println(secret)
+// or serialize it to JSON/XML. This enable you to easily monitor your logs for
+// secret leak.
+var SecretLeakedMarker = "<!SECRET_LEAKED!>"
+
 // NewSecret wraps given secret and returns *Secret[T]. Wrapped value and inner
 // values will be entirely wiped from memory when garbage collected, this
 // includes maps, slices pointers, etc. Returned secret owns wrapped value and
@@ -36,9 +42,25 @@ func (s *Secret[T]) ExposeSecret() T {
 }
 
 // String implements fmt.Stringer.
+// This function returns the [SecretLeakedMarker] marker string so it can be
+// easily searched.
 func (s *Secret[T]) String() string {
+	return SecretLeakedMarker
+}
+
+// Format implements fmt.GoStringer.
+// This function return the [SecretLeakedMarker] marker string and appends
+// "Secret[T](******)" as a suffix.
+func (s *Secret[T]) GoString() string {
 	typeName := reflect.TypeOf(s.value).String()
-	return fmt.Sprintf("Secret[%v](******)", typeName)
+	return fmt.Sprintf(SecretLeakedMarker+" Secret[%v](******)", typeName)
+}
+
+// MarshalText implements encoding.TextMarshaler
+// This function returns the [SecretLeakedMarker] marker byte slice so it can be
+// easily searched.
+func (s *Secret[T]) MarshalText() ([]byte, error) {
+	return []byte(SecretLeakedMarker), nil
 }
 
 // Disable zeroize on garbage collection for this secret.

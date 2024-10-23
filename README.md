@@ -55,6 +55,14 @@ func retrieveSecret() []byte {
 }
 ```
 
+If you accidentally leak your secret using `fmt.Println`, `json.Marshal` or
+another method, the output will contains `<!SECRET_LEAKED!>` marker string. You
+can customize this value by setting the package variable
+`secrecy.SecretLeakedMarker`. This way, you can easily check for secret leaks in
+your logs using tool such as `grep`.
+
+### Disable zeroize
+
 Sometime, you must pass your secret to a library global variable such as stripe
 global [`Key`](https://pkg.go.dev/github.com/stripe/stripe-go/v80#pkg-variables)
 variable.
