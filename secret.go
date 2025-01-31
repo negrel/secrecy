@@ -44,14 +44,14 @@ func (s *Secret[T]) ExposeSecret() T {
 // String implements fmt.Stringer.
 // This function returns the [SecretLeakedMarker] marker string so it can be
 // easily searched.
-func (s *Secret[T]) String() string {
+func (s Secret[T]) String() string {
 	return SecretLeakedMarker
 }
 
 // Format implements fmt.GoStringer.
 // This function return the [SecretLeakedMarker] marker string and appends
 // "Secret[T](******)" as a suffix.
-func (s *Secret[T]) GoString() string {
+func (s Secret[T]) GoString() string {
 	typeName := reflect.TypeOf(s.value).String()
 	return fmt.Sprintf(SecretLeakedMarker+" Secret[%v](******)", typeName)
 }
@@ -59,7 +59,7 @@ func (s *Secret[T]) GoString() string {
 // MarshalText implements encoding.TextMarshaler
 // This function returns the [SecretLeakedMarker] marker byte slice so it can be
 // easily searched.
-func (s *Secret[T]) MarshalText() ([]byte, error) {
+func (s Secret[T]) MarshalText() ([]byte, error) {
 	return []byte(SecretLeakedMarker), nil
 }
 
