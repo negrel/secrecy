@@ -89,6 +89,20 @@ func TestSecret(t *testing.T) {
 		}
 	})
 
+	t.Run("json.Unmarshal", func(t *testing.T) {
+		bytes := []byte(`"mysecret"`)
+		var secret Secret[string]
+		err := json.Unmarshal(bytes, &secret)
+		if err != nil {
+			t.Fatal(err)
+		}
+		str := secret.value
+
+		if str != "mysecret" {
+			t.Fatal("json.Unmarshal invalid value:", str)
+		}
+	})
+
 	t.Run("xml.Marshal", func(t *testing.T) {
 		secret := NewSecret("mysecret")
 		bytes, err := xml.Marshal(secret)
