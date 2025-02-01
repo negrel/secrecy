@@ -18,11 +18,23 @@ func TestSecret(t *testing.T) {
 		if str != "<!SECRET_LEAKED!>" {
 			t.Fatal("fmt.Sprintf(% +v) leak secret:", str)
 		}
+
+		// Should work on a non pointer receiver too
+		str = fmt.Sprintf("%+v", *secret)
+		if str != "<!SECRET_LEAKED!>" {
+			t.Fatal("fmt.Sprintf(% +v) leak secret:", str)
+		}
 	})
 
 	t.Run("fmt.Sprintf(%#v)", func(t *testing.T) {
 		secret := NewSecret("mysecret")
 		str := fmt.Sprintf("%#v", secret)
+		if str != "<!SECRET_LEAKED!> Secret[string](******)" {
+			t.Fatal("fmt.Sprintf(% #v) leak secret:", str)
+		}
+
+		// Should work on a non pointer receiver too
+		str = fmt.Sprintf("%#v", *secret)
 		if str != "<!SECRET_LEAKED!> Secret[string](******)" {
 			t.Fatal("fmt.Sprintf(% #v) leak secret:", str)
 		}
@@ -34,7 +46,7 @@ func TestSecret(t *testing.T) {
 			logger := slog.New(slog.NewTextHandler(&buf, nil))
 
 			secret := NewSecret("mysecret")
-			logger.Info("", "secret", secret)
+			logger.Info("", "secret", secret, "derefSecret", *secret)
 			str := buf.String()
 			if strings.Contains(str, "mysecret") {
 				t.Fatal("fmt.Sprintf leak secret:", str)
@@ -45,7 +57,7 @@ func TestSecret(t *testing.T) {
 			logger := slog.New(slog.NewJSONHandler(&buf, nil))
 
 			secret := NewSecret("mysecret")
-			logger.Info("", "secret", secret)
+			logger.Info("", "secret", secret, "derefSecret", *secret)
 			str := buf.String()
 			if strings.Contains(str, "mysecret") {
 				t.Fatal("fmt.Sprintf leak secret:", str)
@@ -64,6 +76,17 @@ func TestSecret(t *testing.T) {
 		if str != `"\u003c!SECRET_LEAKED!\u003e"` {
 			t.Fatal("json.Marshal leak secret:", str)
 		}
+
+		// Should work on a non pointer receiver too
+		bytes, err = json.Marshal(*secret)
+		if err != nil {
+			t.Fatal(err)
+		}
+		str = string(bytes)
+
+		if str != `"\u003c!SECRET_LEAKED!\u003e"` {
+			t.Fatal("json.Marshal leak secret:", str)
+		}
 	})
 
 	t.Run("xml.Marshal", func(t *testing.T) {
@@ -73,6 +96,17 @@ func TestSecret(t *testing.T) {
 			t.Fatal(err)
 		}
 		str := string(bytes)
+
+		if str != `<Secret[string]>&lt;!SECRET_LEAKED!&gt;</Secret[string]>` {
+			t.Fatal("xml.Marshal leak secret:", str)
+		}
+
+		// Should work on a non pointer receiver too
+		bytes, err = xml.Marshal(*secret)
+		if err != nil {
+			t.Fatal(err)
+		}
+		str = string(bytes)
 
 		if str != `<Secret[string]>&lt;!SECRET_LEAKED!&gt;</Secret[string]>` {
 			t.Fatal("xml.Marshal leak secret:", str)
