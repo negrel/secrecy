@@ -30,3 +30,7 @@ func (ss SerializableSecret[S, T]) MarshalJSON() ([]byte, error) {
 	secret := ss.ExposeSecret()
 	return json.Marshal(secret)
 }
+
+func (ss *SerializableSecret[S, T]) UnmarshalJSON(data []byte) error {
+	return json.Unmarshal(data, &ss.secret)
+}

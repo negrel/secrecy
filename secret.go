@@ -1,6 +1,7 @@
 package secrecy
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"runtime"
@@ -61,6 +62,10 @@ func (s Secret[T]) GoString() string {
 // easily searched.
 func (s Secret[T]) MarshalText() ([]byte, error) {
 	return []byte(SecretLeakedMarker), nil
+}
+
+func (s *Secret[T]) UnmarshalJSON(data []byte) error {
+	return json.Unmarshal(data, &s.value)
 }
 
 // Disable zeroize on garbage collection for this secret.
