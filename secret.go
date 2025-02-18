@@ -64,6 +64,7 @@ func (s Secret[T]) MarshalText() ([]byte, error) {
 	return []byte(SecretLeakedMarker), nil
 }
 
+// UnmarshalJSON implements json.Unmarshaler.
 func (s *Secret[T]) UnmarshalJSON(data []byte) error {
 	return json.Unmarshal(data, &s.value)
 }

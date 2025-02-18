@@ -31,6 +31,7 @@ func (ss SerializableSecret[S, T]) MarshalJSON() ([]byte, error) {
 	return json.Marshal(secret)
 }
 
+// UnmarshalJSON implements json.Unmarshaler.
 func (ss *SerializableSecret[S, T]) UnmarshalJSON(data []byte) error {
 	return json.Unmarshal(data, &ss.secret)
 }

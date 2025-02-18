@@ -96,10 +96,9 @@ func TestSecret(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		str := secret.value
 
-		if str != "mysecret" {
-			t.Fatal("json.Unmarshal invalid value:", str)
+		if secret.ExposeSecret() != "mysecret" {
+			t.Fatal("json.Unmarshal invalid value:", secret.ExposeSecret())
 		}
 	})
 
